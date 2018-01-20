@@ -1,15 +1,15 @@
-FROM alpine:3.7
-MAINTAINER Rohith Jayawardene <gambol99@gmail.com>
-LABEL Name=keycloak-proxy \
-      Release=https://github.com/gambol99/keycloak-proxy \
-      Url=https://github.com/gambol99/keycloak-proxy \
-      Help=https://github.com/gambol99/keycloak-proxy/issues
+FROM golang AS builder
+RUN go get -u github.com/golang/dep/cmd/dep
+WORKDIR /go/src/github.com/keycloak/keycloak-gatekeeper
+COPY . .
+RUN dep ensure
+ENV CGO_ENABLED=0
+RUN go install
 
-RUN apk add --no-cache ca-certificates
+FROM wisvch/debian:stretch-slim AS wisvch
 
-ADD templates/ /opt/templates
-ADD bin/keycloak-proxy /opt/keycloak-proxy
-
-WORKDIR "/opt"
-
-ENTRYPOINT [ "/opt/keycloak-proxy" ]
+FROM scratch
+COPY --from=builder /go/bin/keycloak-gatekeeper /oidc-proxy
+COPY --from=wisvch /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+USER 999
+ENTRYPOINT ["/oidc-proxy"]

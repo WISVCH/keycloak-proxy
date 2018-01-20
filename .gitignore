@@ -21,6 +21,7 @@ forwarding.yml
 *.o
 *.a
 *.so
+keycloak-proxy
 
 # Folders
 _obj
