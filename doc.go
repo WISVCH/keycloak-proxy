@@ -61,7 +61,7 @@ const (
 	claimRealmAccess    = "realm_access"
 	claimResourceAccess = "resource_access"
 	claimResourceRoles  = "roles"
-	claimGroups         = "groups"
+	claimGroups         = "ldap_groups"
 )
 
 const (
