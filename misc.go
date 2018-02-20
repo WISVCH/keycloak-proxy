@@ -77,6 +77,8 @@ func (r *oauthProxy) accessForbidden(w http.ResponseWriter, req *http.Request) c
 		if err := r.Render(w, name, r.config.Tags); err != nil {
 			r.log.Error("failed to render the template", zap.Error(err), zap.String("template", name))
 		}
+	} else {
+		w.Write([]byte("403 Forbidden\n"))
 	}
 
 	return r.revokeProxy(w, req)
