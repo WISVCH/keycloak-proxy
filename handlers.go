@@ -132,6 +132,16 @@ func (r *oauthProxy) oauthCallbackHandler(w http.ResponseWriter, req *http.Reque
 		r.accessForbidden(w, req)
 		return
 	}
+
+	// step: check if the id token is valid
+	if err = verifyToken(r.client, token); err != nil {
+		r.log.Error("unable to verify the id token", zap.Error(err))
+		r.accessForbidden(w, req)
+		return
+	}
+	accessToken := token.Encode()
+
+	// step: parse access token
 	access, id, err := parseToken(resp.AccessToken)
 	if err == nil {
 		token = access
@@ -139,14 +149,6 @@ func (r *oauthProxy) oauthCallbackHandler(w http.ResponseWriter, req *http.Reque
 	} else {
 		r.log.Warn("unable to parse the access token, using id token only", zap.Error(err))
 	}
-
-	// step: check the access token is valid
-	if err = verifyToken(r.client, token); err != nil {
-		r.log.Error("unable to verify the id token", zap.Error(err))
-		r.accessForbidden(w, req)
-		return
-	}
-	accessToken := token.Encode()
 
 	// step: are we encrypting the access token?
 	if r.config.EnableEncryptedToken {
